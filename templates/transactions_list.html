@@ -1,0 +1,11 @@
+{% for transaction in transactions %}
+    {% include 'transaction_item.html' %}
+{% endfor %}
+
+{% if has_more %}
+<div id="load-more-container" class="text-center mt-6">
+    <button hx-get="/transactions?offset={{ next_offset }}" hx-trigger="click" hx-swap="outerHTML" hx-target="#load-more-container" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">
+        Charger plus
+    </button>
+</div>
+{% endif %}

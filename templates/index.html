@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 font-sans">
+    <div class="container mx-auto max-w-2xl mt-8 p-4">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-slate-800">Mon Suivi de Budget</h1>
+            <p class="text-slate-500">Une vue claire de vos finances</p>
+        </header>
+
+        <!-- Balance Card -->
+        <div id="balance" hx-swap-oob="true" class="bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
+            <h2 class="text-lg font-medium text-indigo-200">Solde Actuel</h2>
+            <p class="text-4xl font-bold tracking-tight">{{ "%.2f"|format(balance) }} €</p>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-10">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Répartition Revenus/Dépenses</h2>
+            <canvas id="budgetChart"></canvas>
+        </div>
+
+        <!-- Add Transaction Form -->
+        <div x-data="{ open: false }" class="mb-10">
+            <div class="text-center">
+                <button @click="open = !open" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                    <span x-show="!open">Ajouter une transaction</span>
+                    <span x-show="open">Fermer</span>
+                </button>
+            </div>
+            <div x-show="open" x-transition class="mt-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <form hx-post="/add-transaction" hx-target="#transactions-container" hx-swap="afterbegin" @submit="setTimeout(() => open = false, 500)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="label" class="block text-sm font-medium text-slate-600 mb-1">Libellé</label>
+                            <input type="text" id="label" name="label" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Ex: Salaire, Courses" required>
+                        </div>
+                        <div>
+                            <label for="amount" class="block text-sm font-medium text-slate-600 mb-1">Montant (€)</label>
+                            <input type="number" step="0.01" id="amount" name="amount" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Ex: 150.50" required>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label for="type" class="block text-sm font-medium text-slate-600 mb-1">Type</label>
+                        <select id="type" name="type" class="w-full p-3 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <option value="income">Revenu</option>
+                            <option value="expense">Dépense</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        Enregistrer la transaction
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Transactions List -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Historique des Transactions</h2>
+            <div id="transactions-container" class="space-y-3">
+                {% include 'transactions_list.html' %}
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            let budgetChart;
+
+            async function fetchChartData() {
+                const response = await fetch('/chart-data');
+                const data = await response.json();
+                return data;
+            }
+
+            async function updateChart() {
+                const chartData = await fetchChartData();
+                if (budgetChart) {
+                    budgetChart.destroy(); // Destroy existing chart before creating a new one
+                }
+                budgetChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [{
+                            data: chartData.data,
+                            backgroundColor: chartData.colors,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: false,
+                                text: 'Répartition Revenus/Dépenses'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initial chart load
+            updateChart();
+
+            // Listen for HTMX events to update the chart after transactions are added, deleted, or updated
+            document.body.addEventListener('htmx:afterRequest', function(event) {
+                // Check if the request was for adding, deleting, or updating a transaction
+                if (event.detail.path.startsWith('/add-transaction') ||
+                    event.detail.path.startsWith('/delete-transaction') ||
+                    event.detail.path.startsWith('/update-transaction')) {
+                    updateChart();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

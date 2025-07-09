@@ -16,6 +16,7 @@ class Transaction(db.Model):
     total_installments = db.Column(db.Integer, nullable=True)
     paid_installments = db.Column(db.Integer, default=0)
     parent_recurring_id = db.Column(db.Integer, db.ForeignKey('transaction.id'), nullable=True)
+    completion_date = db.Column(db.DateTime, nullable=True)
     
     # Relationship to access children transactions (generated instances)
     children = db.relationship('Transaction', backref=db.backref('parent', remote_side=[id]), lazy=True)

@@ -230,11 +230,27 @@ def reports():
 
 @main_routes.route('/recurring-transactions')
 def recurring_transactions():
-    recurring_models = Transaction.query.filter_by(is_recurring=True).all()
-    # Calculate remaining installments for each recurring model
-    for model in recurring_models:
-        model.remaining_installments = model.total_installments - model.paid_installments if model.total_installments is not None else None
-    return render_template('recurring_transactions.html', recurring_models=recurring_models)
+    # Fetch active recurring models
+    active_recurring_models = []
+    all_recurring_models = Transaction.query.filter_by(is_recurring=True).all()
+    for model in all_recurring_models:
+        if model.total_installments is not None and model.paid_installments is not None:
+            model.remaining_installments = model.total_installments - model.paid_installments
+            if model.remaining_installments > 0:
+                active_recurring_models.append(model)
+        else:
+            # If total_installments or paid_installments is None, assume active for now
+            active_recurring_models.append(model)
+
+    # Fetch completed recurring models
+    completed_recurring_models = []
+    for model in all_recurring_models:
+        if model.total_installments is not None and model.paid_installments is not None:
+            model.remaining_installments = model.total_installments - model.paid_installments
+            if model.remaining_installments <= 0:
+                completed_recurring_models.append(model)
+
+    return render_template('recurring_transactions.html', active_recurring_models=active_recurring_models, completed_recurring_models=completed_recurring_models)
 
 @main_routes.route('/recurring-transaction-details/<int:recurring_model_id>')
 def recurring_transaction_details(recurring_model_id):
@@ -311,6 +327,9 @@ def pay_in_advance(transaction_id):
         parent_recurring_model = Transaction.query.get(transaction.parent_recurring_id)
         if parent_recurring_model:
             parent_recurring_model.paid_installments += 1
+            # If all installments are paid, set the completion_date
+            if parent_recurring_model.paid_installments == parent_recurring_model.total_installments:
+                parent_recurring_model.completion_date = datetime.utcnow()
             db.session.commit()
 
     # Recalculate totals and balance for OOB swap

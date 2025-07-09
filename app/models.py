@@ -13,3 +13,9 @@ class Transaction(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     is_recurring = db.Column(db.Boolean, default=False)
     recurrence_frequency = db.Column(db.String(10), nullable=True)
+    total_installments = db.Column(db.Integer, nullable=True)
+    paid_installments = db.Column(db.Integer, default=0)
+    parent_recurring_id = db.Column(db.Integer, db.ForeignKey('transaction.id'), nullable=True)
+    
+    # Relationship to access children transactions (generated instances)
+    children = db.relationship('Transaction', backref=db.backref('parent', remote_side=[id]), lazy=True)

@@ -9,14 +9,14 @@ main_routes = Blueprint('main', __name__)
 TRANSACTIONS_PER_PAGE = 20
 
 def get_transactions_filtered(limit=None, offset=0):
-    query = Transaction.query.order_by(Transaction.id.desc())
+    query = Transaction.query.filter(Transaction.timestamp <= datetime.utcnow()).order_by(Transaction.id.desc())
     if limit:
         query = query.limit(limit).offset(offset)
     return query.all()
 
 def get_totals_filtered():
-    total_income = db.session.query(db.func.sum(Transaction.amount)).filter_by(type="income").scalar() or 0
-    total_expense = db.session.query(db.func.sum(Transaction.amount)).filter_by(type="expense").scalar() or 0
+    total_income = db.session.query(db.func.sum(Transaction.amount)).filter_by(type="income").filter(Transaction.timestamp <= datetime.utcnow()).scalar() or 0
+    total_expense = db.session.query(db.func.sum(Transaction.amount)).filter_by(type="expense").filter(Transaction.timestamp <= datetime.utcnow()).scalar() or 0
     return total_income, total_expense
 
 @main_routes.route('/')
@@ -54,23 +54,25 @@ def add_transaction():
     num_installments_str = request.form.get('num_installments')
     num_installments = int(num_installments_str) if num_installments_str else 1
 
-    new_transaction = Transaction(label=label, amount=amount, type=type, is_recurring=is_recurring, recurrence_frequency=recurrence_frequency)
+    new_transaction = Transaction(label=label, amount=amount, type=type, is_recurring=is_recurring, recurrence_frequency=recurrence_frequency, total_installments=num_installments if is_recurring else None, paid_installments=1 if is_recurring else 0)
     db.session.add(new_transaction)
     db.session.commit()
 
     if is_recurring and recurrence_frequency and num_installments > 1:
+        # Get the ID of the newly created recurring transaction
+        parent_id = new_transaction.id
         current_date = datetime.utcnow()
         for i in range(1, num_installments):
             if recurrence_frequency == 'monthly':
                 next_date = current_date + relativedelta(months=i)
             elif recurrence_frequency == 'weekly':
-                next_date = current_date + relativedelta(weeks=i)
+                next_date = current_date + timedelta(weeks=i)
             elif recurrence_frequency == 'yearly':
                 next_date = current_date + relativedelta(years=i)
             else:
                 break
             
-            future_transaction = Transaction(label=label, amount=amount, type=type, timestamp=next_date, is_recurring=False, recurrence_frequency=recurrence_frequency)
+            future_transaction = Transaction(label=label, amount=amount, type=type, timestamp=next_date, is_recurring=False, recurrence_frequency=recurrence_frequency, parent_recurring_id=parent_id)
             db.session.add(future_transaction)
         db.session.commit()
     
@@ -229,6 +231,9 @@ def reports():
 @main_routes.route('/recurring-transactions')
 def recurring_transactions():
     recurring_models = Transaction.query.filter_by(is_recurring=True).all()
+    # Calculate remaining installments for each recurring model
+    for model in recurring_models:
+        model.remaining_installments = model.total_installments - model.paid_installments if model.total_installments is not None else None
     return render_template('recurring_transactions.html', recurring_models=recurring_models)
 
 @main_routes.route('/edit-recurring-transaction/<int:transaction_id>')
@@ -252,3 +257,59 @@ def delete_recurring_transaction(transaction_id):
     db.session.delete(recurring_model)
     db.session.commit()
     return '', 200 # Return empty response for HTMX to remove element
+
+@main_routes.route('/upcoming-transactions')
+def upcoming_transactions():
+    # Get transactions where timestamp is in the future
+    upcoming = Transaction.query.filter(Transaction.timestamp > datetime.utcnow()).order_by(Transaction.timestamp.asc()).all()
+    # For upcoming transactions that are part of a recurring series, get remaining installments
+    for transaction in upcoming:
+        if transaction.parent_recurring_id:
+            parent_model = Transaction.query.get(transaction.parent_recurring_id)
+            if parent_model:
+                transaction.remaining_installments = parent_model.total_installments - parent_model.paid_installments
+            else:
+                transaction.remaining_installments = None
+        else:
+            transaction.remaining_installments = None
+    return render_template('upcoming_transactions.html', upcoming_transactions=upcoming)
+
+@main_routes.route('/pay-in-advance/<int:transaction_id>', methods=['POST'])
+def pay_in_advance(transaction_id):
+    transaction = Transaction.query.get_or_404(transaction_id)
+    
+    # Update the timestamp to now, so it affects the current balance
+    transaction.timestamp = datetime.utcnow()
+    db.session.commit()
+
+    # If this transaction has a recurring parent, increment its paid_installments
+    if transaction.parent_recurring_id:
+        parent_recurring_model = Transaction.query.get(transaction.parent_recurring_id)
+        if parent_recurring_model:
+            parent_recurring_model.paid_installments += 1
+            db.session.commit()
+
+    # Recalculate totals and balance for OOB swap
+    total_income, total_expense = get_totals_filtered()
+    balance = total_income - total_expense
+
+    balance_html = f'''
+    <div id="balance" hx-swap-oob="true" class="bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
+        <h2 class="text-lg font-medium text-indigo-200">Solde Actuel</h2>
+        <p class="text-4xl font-bold tracking-tight">{balance:.2f} €</p>
+    </div>
+    '''
+    totals_html = f'''
+    <div id="totals-by-type" hx-swap-oob="true" class="grid grid-cols-2 gap-4 text-center">
+        <div class="bg-green-500 text-white p-4 rounded-lg shadow-md">
+            <h3 class="text-lg font-medium">Revenus</h3>
+            <p class="text-2xl font-bold">{total_income:.2f} €</p>
+        </div>
+        <div class="bg-rose-500 text-white p-4 rounded-lg shadow-md">
+            <h3 class="text-lg font-medium">Dépenses</h3>
+            <p class="text-2xl font-bold">{total_expense:.2f} €</p>
+        </div>
+    </div>
+    '''
+    # Return empty response for HTMX to remove the row, plus OOB swaps for balance/totals
+    return balance_html + totals_html, 200

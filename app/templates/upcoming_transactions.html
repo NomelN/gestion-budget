@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transactions Récurrentes - Gemini</title>
+    <title>Prélèvements à Venir - Gemini</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,46 +19,45 @@
         </nav>
 
         <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-900">Transactions Récurrentes</h1>
-            <p class="text-lg text-gray-600 mt-2">Gérez vos abonnements et paiements réguliers.</p>
+            <h1 class="text-4xl font-bold text-gray-900">Prélèvements à Venir</h1>
+            <p class="text-lg text-gray-600 mt-2">Anticipez vos dépenses et revenus futurs.</p>
         </header>
 
         <div class="bg-white p-6 rounded-2xl shadow-lg">
-            <h2 class="text-2xl font-bold mb-4">Modèles de Transactions Récurrentes</h2>
+            <h2 class="text-2xl font-bold mb-4">Transactions Futures</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Libellé</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fréquence</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Restant</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="recurring-transactions-list" class="bg-white divide-y divide-gray-200">
-                        {% for transaction in recurring_models %}
-                        <tr id="transaction-{{ transaction.id }}">
+                    <tbody id="upcoming-transactions-list" class="bg-white divide-y divide-gray-200">
+                        {% for transaction in upcoming_transactions %}
+                        <tr id="upcoming-transaction-{{ transaction.id }}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ transaction.timestamp.strftime('%d/%m/%Y') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ transaction.label }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm {% if transaction.type == 'income' %}text-green-600{% else %}text-red-600{% endif %}">{{ '%.2f'|format(transaction.amount) }} €</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ transaction.type }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ transaction.recurrence_frequency }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {% if transaction.remaining_installments is not none %}
-                                    {{ transaction.remaining_installments }} / {{ transaction.total_installments }}
+                                    {{ transaction.remaining_installments }}
                                 {% else %}
                                     N/A
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button hx-get="/edit-recurring-transaction/{{ transaction.id }}" hx-target="#transaction-{{ transaction.id }}" hx-swap="outerHTML" class="text-indigo-600 hover:text-indigo-900 mr-4">Modifier</button>
-                                <button hx-delete="/delete-recurring-transaction/{{ transaction.id }}" hx-target="#transaction-{{ transaction.id }}" hx-swap="outerHTML swap:0.5s" class="text-red-600 hover:text-red-900">Supprimer</button>
+                                <button hx-post="/pay-in-advance/{{ transaction.id }}" hx-target="#upcoming-transaction-{{ transaction.id }}" hx-swap="outerHTML swap:0.5s" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-md">Payer en avance</button>
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Aucune transaction récurrente trouvée.</td>
+                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Aucun prélèvement futur trouvé.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

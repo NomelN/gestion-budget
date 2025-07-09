@@ -244,7 +244,21 @@ def recurring_transaction_details(recurring_model_id):
         Transaction.parent_recurring_id == recurring_model_id,
         Transaction.timestamp > datetime.utcnow()
     ).order_by(Transaction.timestamp.asc()).all()
-    return render_template('recurring_transaction_details.html', recurring_model=recurring_model, upcoming_children=upcoming_children)
+    # Calculate remaining installments for each child for display in the modal
+    for idx, child in enumerate(upcoming_children):
+        if child.parent_recurring_id:
+            parent_model = Transaction.query.get(child.parent_recurring_id)
+            if parent_model:
+                # remaining from this child's perspective
+                child.remaining_from_its_perspective = parent_model.total_installments - parent_model.paid_installments - idx
+                child.total_installments_series = parent_model.total_installments
+            else:
+                child.remaining_from_its_perspective = None
+                child.total_installments_series = None
+        else:
+            child.remaining_from_its_perspective = None
+            child.total_installments_series = None
+    return render_template('recurring_transaction_details_modal.html', recurring_model=recurring_model, upcoming_children=upcoming_children)
 
 @main_routes.route('/edit-recurring-transaction/<int:transaction_id>')
 def edit_recurring_transaction(transaction_id):

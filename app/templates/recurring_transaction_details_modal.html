@@ -1,0 +1,91 @@
+<div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center py-8" id="recurring-details-modal">
+    <div class="relative p-8 bg-white w-full max-w-2xl mx-auto rounded-lg shadow-lg max-h-[90vh] overflow-y-auto" hx-target="this" hx-swap="outerHTML">
+        <!-- Close button -->
+        <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700" onclick="document.getElementById('recurring-details-modal').remove()">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <header class="mb-6">
+            <h2 class="text-3xl font-bold text-gray-900">Détails Transaction Récurrente</h2>
+            <p class="text-lg text-gray-600 mt-2">{{ recurring_model.label }} ({{ recurring_model.amount }} € {{ recurring_model.type }})</p>
+            <p class="text-md text-gray-500">Fréquence: {{ recurring_model.recurrence_frequency }} | Total: {{ recurring_model.total_installments }} | Payés: {{ recurring_model.paid_installments }} | Restants: {{ recurring_model.remaining_installments }}</p>
+        </header>
+
+        <div class="bg-white p-4 rounded-lg shadow-inner mb-6">
+            <h3 class="text-xl font-bold mb-3">Prochains Prélèvements</h3>
+            <div class="overflow-x-auto">
+                <table class="divide-y divide-gray-200 w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Libellé</th>
+                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
+                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Restant</th>
+                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="upcoming-children-list" class="bg-white divide-y divide-gray-200">
+                        {% for transaction in upcoming_children %}
+                        <tr id="upcoming-transaction-{{ transaction.id }}">
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{{ transaction.timestamp.strftime('%d/%m/%Y') }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{{ transaction.label }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-center {% if transaction.type == 'income' %}text-green-600{% else %}text-red-600{% endif %}">{{ '%.2f'|format(transaction.amount) }} €</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-center text-gray-500">{{ transaction.type }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-center text-gray-500">
+                                {% if transaction.remaining_from_its_perspective is not none and transaction.total_installments_series is not none %}
+                                    {{ transaction.remaining_from_its_perspective }} / {{ transaction.total_installments_series }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-center text-sm font-medium">
+                                <button hx-post="/pay-in-advance/{{ transaction.id }}" hx-target="#upcoming-transaction-{{ transaction.id }}" hx-swap="outerHTML swap:0.5s" class="bg-indigo-500 hover:bg-indigo-600 text-white py-1 px-3 rounded-md text-xs">Payer en avance</button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="px-3 py-2 text-center text-sm text-gray-500">Aucun prélèvement futur pour ce modèle.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Edit Recurring Model Form -->
+        <div class="bg-white p-4 rounded-lg shadow-inner">
+            <h3 class="text-xl font-bold mb-3">Modifier le Modèle Récurrent</h3>
+            <form hx-put="/update-recurring-transaction/{{ recurring_model.id }}" hx-target="#recurring-model-details" hx-swap="outerHTML">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label for="label" class="block text-sm font-medium text-gray-600 mb-1">Libellé</label>
+                        <input type="text" id="label" name="label" value="{{ recurring_model.label }}" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                    </div>
+                    <div>
+                        <label for="amount" class="block text-sm font-medium text-gray-600 mb-1">Montant (€)</label>
+                        <input type="number" step="0.01" id="amount" name="amount" value="{{ recurring_model.amount }}" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="type" class="block text-sm font-medium text-gray-600 mb-1">Type</label>
+                    <select id="type" name="type" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                        <option value="income" {% if recurring_model.type == 'income' %}selected{% endif %}>Revenu</option>
+                        <option value="expense" {% if recurring_model.type == 'expense' %}selected{% endif %}>Dépense</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="recurrence_frequency" class="block text-sm font-medium text-gray-600 mb-1">Fréquence de récurrence</label>
+                    <select id="recurrence_frequency" name="recurrence_frequency" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                        <option value="monthly" {% if recurring_model.recurrence_frequency == 'monthly' %}selected{% endif %}>Mensuel</option>
+                        <option value="weekly" {% if recurring_model.recurrence_frequency == 'weekly' %}selected{% endif %}>Hebdomadaire</option>
+                        <option value="yearly" {% if recurring_model.recurrence_frequency == 'yearly' %}selected{% endif %}>Annuel</option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md text-sm">Enregistrer les modifications</button>
+            </form>
+        </div>
+    </div>
+</div>

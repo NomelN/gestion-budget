@@ -1,0 +1,25 @@
+<tr id="transaction-{{ transaction.id }}">
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        <input type="text" name="label" value="{{ transaction.label }}" class="w-full p-2 border border-gray-300 rounded-md">
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm">
+        <input type="number" step="0.01" name="amount" value="{{ transaction.amount }}" class="w-full p-2 border border-gray-300 rounded-md">
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm">
+        <select name="type" class="w-full p-2 border border-gray-300 rounded-md">
+            <option value="income" {% if transaction.type == 'income' %}selected{% endif %}>Revenu</option>
+            <option value="expense" {% if transaction.type == 'expense' %}selected{% endif %}>Dépense</option>
+        </select>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm">
+        <select name="recurrence_frequency" class="w-full p-2 border border-gray-300 rounded-md">
+            <option value="monthly" {% if transaction.recurrence_frequency == 'monthly' %}selected{% endif %}>Mensuel</option>
+            <option value="weekly" {% if transaction.recurrence_frequency == 'weekly' %}selected{% endif %}>Hebdomadaire</option>
+            <option value="yearly" {% if transaction.recurrence_frequency == 'yearly' %}selected{% endif %}>Annuel</option>
+        </select>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <button hx-put="/update-recurring-transaction/{{ transaction.id }}" hx-include="closest tr" hx-target="#transaction-{{ transaction.id }}" hx-swap="outerHTML" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md mr-2">Enregistrer</button>
+        <button hx-get="/recurring-transactions" hx-target="#transaction-{{ transaction.id }}" hx-swap="outerHTML" class="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-md">Annuler</button>
+    </td>
+</tr>

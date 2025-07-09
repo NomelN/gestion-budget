@@ -51,7 +51,8 @@ def add_transaction():
     type = request.form['type']
     is_recurring = request.form.get('is_recurring') == '1'
     recurrence_frequency = request.form.get('recurrence_frequency')
-    num_installments = int(request.form.get('num_installments', 1))
+    num_installments_str = request.form.get('num_installments')
+    num_installments = int(num_installments_str) if num_installments_str else 1
 
     new_transaction = Transaction(label=label, amount=amount, type=type, is_recurring=is_recurring, recurrence_frequency=recurrence_frequency)
     db.session.add(new_transaction)
@@ -224,3 +225,30 @@ def reports():
     }
 
     return render_template('reports.html', monthly_data=monthly_data, chart_data=chart_data, summary=summary_stats)
+
+@main_routes.route('/recurring-transactions')
+def recurring_transactions():
+    recurring_models = Transaction.query.filter_by(is_recurring=True).all()
+    return render_template('recurring_transactions.html', recurring_models=recurring_models)
+
+@main_routes.route('/edit-recurring-transaction/<int:transaction_id>')
+def edit_recurring_transaction(transaction_id):
+    recurring_model = Transaction.query.get_or_404(transaction_id)
+    return render_template('edit_recurring_transaction_form.html', transaction=recurring_model)
+
+@main_routes.route('/update-recurring-transaction/<int:transaction_id>', methods=['PUT'])
+def update_recurring_transaction(transaction_id):
+    recurring_model = Transaction.query.get_or_404(transaction_id)
+    recurring_model.label = request.form['label']
+    recurring_model.amount = float(request.form['amount'])
+    recurring_model.type = request.form['type']
+    recurring_model.recurrence_frequency = request.form['recurrence_frequency']
+    db.session.commit()
+    return render_template('transaction_item.html', transaction=recurring_model) # Re-render the item in the list
+
+@main_routes.route('/delete-recurring-transaction/<int:transaction_id>', methods=['DELETE'])
+def delete_recurring_transaction(transaction_id):
+    recurring_model = Transaction.query.get_or_404(transaction_id)
+    db.session.delete(recurring_model)
+    db.session.commit()
+    return '', 200 # Return empty response for HTMX to remove element

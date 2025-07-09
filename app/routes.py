@@ -1,27 +1,12 @@
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timedelta
+from flask import Blueprint, render_template, request, jsonify
+from .models import db, Transaction
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
-import os
 from sqlalchemy import extract, case
-from collections import defaultdict
 
-app = Flask(__name__)
-basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+main_routes = Blueprint('main', __name__)
 
 TRANSACTIONS_PER_PAGE = 20
-
-class Transaction(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    label = db.Column(db.String(100), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    type = db.Column(db.String(10), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    is_recurring = db.Column(db.Boolean, default=False)
-    recurrence_frequency = db.Column(db.String(10), nullable=True)
 
 def get_transactions_filtered(limit=None, offset=0):
     query = Transaction.query.order_by(Transaction.id.desc())
@@ -34,7 +19,7 @@ def get_totals_filtered():
     total_expense = db.session.query(db.func.sum(Transaction.amount)).filter_by(type="expense").scalar() or 0
     return total_income, total_expense
 
-@app.route('/')
+@main_routes.route('/')
 def index():
     transactions = get_transactions_filtered(limit=TRANSACTIONS_PER_PAGE)
     total_income, total_expense = get_totals_filtered()
@@ -50,7 +35,7 @@ def index():
                            total_income=total_income,
                            total_expense=total_expense)
 
-@app.route('/transactions')
+@main_routes.route('/transactions')
 def load_transactions():
     offset = int(request.args.get('offset', 0))
     transactions = get_transactions_filtered(limit=TRANSACTIONS_PER_PAGE, offset=offset)
@@ -59,7 +44,7 @@ def load_transactions():
     has_more = total_transactions_count > next_offset
     return render_template('transactions_list.html', transactions=transactions, next_offset=next_offset, has_more=has_more)
 
-@app.route('/add-transaction', methods=['POST'])
+@main_routes.route('/add-transaction', methods=['POST'])
 def add_transaction():
     label = request.form['label']
     amount = float(request.form['amount'])
@@ -78,7 +63,7 @@ def add_transaction():
             if recurrence_frequency == 'monthly':
                 next_date = current_date + relativedelta(months=i)
             elif recurrence_frequency == 'weekly':
-                next_date = current_date + timedelta(weeks=i)
+                next_date = current_date + relativedelta(weeks=i)
             elif recurrence_frequency == 'yearly':
                 next_date = current_date + relativedelta(years=i)
             else:
@@ -112,7 +97,7 @@ def add_transaction():
     transaction_html = render_template('transaction_item.html', transaction=new_transaction)
     return transaction_html + balance_html + totals_html
 
-@app.route('/delete-transaction/<int:transaction_id>', methods=['DELETE'])
+@main_routes.route('/delete-transaction/<int:transaction_id>', methods=['DELETE'])
 def delete_transaction(transaction_id):
     transaction = Transaction.query.get_or_404(transaction_id)
     db.session.delete(transaction)
@@ -141,12 +126,12 @@ def delete_transaction(transaction_id):
     '''
     return balance_html + totals_html
 
-@app.route('/edit-transaction/<int:transaction_id>')
+@main_routes.route('/edit-transaction/<int:transaction_id>')
 def edit_transaction(transaction_id):
     transaction = Transaction.query.get_or_404(transaction_id)
     return render_template('edit_transaction_form.html', transaction=transaction)
 
-@app.route('/update-transaction/<int:transaction_id>', methods=['PUT'])
+@main_routes.route('/update-transaction/<int:transaction_id>', methods=['PUT'])
 def update_transaction(transaction_id):
     transaction = Transaction.query.get_or_404(transaction_id)
     transaction.label = request.form['label']
@@ -178,12 +163,12 @@ def update_transaction(transaction_id):
     transaction_html = render_template('transaction_item.html', transaction=transaction)
     return transaction_html + balance_html + totals_html
 
-@app.route('/get-transaction/<int:transaction_id>')
+@main_routes.route('/get-transaction/<int:transaction_id>')
 def get_transaction(transaction_id):
     transaction = Transaction.query.get_or_404(transaction_id)
     return render_template('transaction_item.html', transaction=transaction)
 
-@app.route('/totals-by-type')
+@main_routes.route('/totals-by-type')
 def totals_by_type():
     total_income, total_expense = get_totals_filtered()
     return f'''
@@ -199,9 +184,8 @@ def totals_by_type():
     </div>
     '''
 
-@app.route('/reports')
+@main_routes.route('/reports')
 def reports():
-    # Query to get monthly totals
     monthly_data = db.session.query(
         extract('year', Transaction.timestamp).label('year'),
         extract('month', Transaction.timestamp).label('month'),
@@ -209,17 +193,14 @@ def reports():
         db.func.sum(case((Transaction.type == 'expense', Transaction.amount), else_=0)).label('total_expense')
     ).group_by('year', 'month').order_by(db.desc('year'), db.desc('month')).all()
 
-    # Prepare data for the chart
     labels = [f"{datetime(r.year, r.month, 1).strftime('%b')} {r.year}" for r in monthly_data]
     income_data = [r.total_income for r in monthly_data]
     expense_data = [r.total_expense for r in monthly_data]
     
-    # Reverse for chronological order in chart
     labels.reverse()
     income_data.reverse()
     expense_data.reverse()
 
-    # Calculate summary statistics
     num_months = len(monthly_data)
     total_income = sum(income_data)
     total_expense = sum(expense_data)
@@ -243,6 +224,3 @@ def reports():
     }
 
     return render_template('reports.html', monthly_data=monthly_data, chart_data=chart_data, summary=summary_stats)
-
-if __name__ == '__main__':
-    app.run(debug=True)

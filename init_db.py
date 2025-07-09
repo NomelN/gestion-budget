@@ -1,9 +1,8 @@
-from app import app, db
+from app import create_app
+from app.models import db
 
-def init_db():
-    with app.app_context():
-        db.create_all()
+app = create_app()
 
-if __name__ == '__main__':
-    init_db()
-    print("Database initialized with SQLAlchemy models.")
+with app.app_context():
+    db.create_all()
+    print("Database initialized in instance/database.db")

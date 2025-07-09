@@ -16,16 +16,29 @@
             <p class="text-slate-500">Une vue claire de vos finances</p>
         </header>
 
+        <!-- Navigation to Reports -->
+        <div class="text-center mb-8">
+            <a href="/reports" class="bg-white hover:bg-slate-100 text-slate-700 font-semibold py-3 px-6 rounded-lg shadow-md border border-slate-200 transition-transform transform hover:scale-105 inline-block">
+                Voir les Rapports et Analyses &rarr;
+            </a>
+        </div>
+
         <!-- Balance Card -->
         <div id="balance" hx-swap-oob="true" class="bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
             <h2 class="text-lg font-medium text-indigo-200">Solde Actuel</h2>
             <p class="text-4xl font-bold tracking-tight">{{ "%.2f"|format(balance) }} €</p>
         </div>
 
-        <!-- Chart Section -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-10">
-            <h2 class="text-2xl font-bold text-slate-800 mb-4">Répartition Revenus/Dépenses</h2>
-            <canvas id="budgetChart"></canvas>
+        <!-- Totals by Type -->
+        <div id="totals-by-type" class="grid grid-cols-2 gap-4 text-center mb-10">
+            <div class="bg-green-500 text-white p-4 rounded-lg shadow-md">
+                <h3 class="text-lg font-medium">Revenus</h3>
+                <p class="text-2xl font-bold">{{ "%.2f"|format(total_income) }} €</p>
+            </div>
+            <div class="bg-rose-500 text-white p-4 rounded-lg shadow-md">
+                <h3 class="text-lg font-medium">Dépenses</h3>
+                <p class="text-2xl font-bold">{{ "%.2f"|format(total_expense) }} €</p>
+            </div>
         </div>
 
         <!-- Add Transaction Form -->
@@ -55,6 +68,24 @@
                             <option value="expense">Dépense</option>
                         </select>
                     </div>
+                    <div x-data="{ isRecurring: false }" class="mb-6">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" x-model="isRecurring" name="is_recurring" value="1" class="form-checkbox h-5 w-5 text-indigo-600">
+                            <span class="ml-2 text-slate-700">Transaction récurrente ?</span>
+                        </label>
+                        <div x-show="isRecurring" x-transition class="mt-3">
+                            <label for="recurrence_frequency" class="block text-sm font-medium text-slate-600 mb-1">Fréquence de récurrence</label>
+                            <select id="recurrence_frequency" name="recurrence_frequency" class="w-full p-3 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                <option value="monthly">Mensuel</option>
+                                <option value="weekly">Hebdomadaire</option>
+                                <option value="yearly">Annuel</option>
+                            </select>
+                            <div class="mt-3">
+                                <label for="num_installments" class="block text-sm font-medium text-slate-600 mb-1">Nombre de paiements</label>
+                                <input type="number" id="num_installments" name="num_installments" min="2" value="2" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            </div>
+                        </div>
+                    </div>
                     <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
                         Enregistrer la transaction
                     </button>
@@ -71,58 +102,8 @@
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('budgetChart').getContext('2d');
-            let budgetChart;
-
-            async function fetchChartData() {
-                const response = await fetch('/chart-data');
-                const data = await response.json();
-                return data;
-            }
-
-            async function updateChart() {
-                const chartData = await fetchChartData();
-                if (budgetChart) {
-                    budgetChart.destroy(); // Destroy existing chart before creating a new one
-                }
-                budgetChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: chartData.labels,
-                        datasets: [{
-                            data: chartData.data,
-                            backgroundColor: chartData.colors,
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                            },
-                            title: {
-                                display: false,
-                                text: 'Répartition Revenus/Dépenses'
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Initial chart load
-            updateChart();
-
-            // Listen for HTMX events to update the chart after transactions are added, deleted, or updated
-            document.body.addEventListener('htmx:afterRequest', function(event) {
-                // Check if the request was for adding, deleting, or updating a transaction
-                if (event.detail.path.startsWith('/add-transaction') ||
-                    event.detail.path.startsWith('/delete-transaction') ||
-                    event.detail.path.startsWith('/update-transaction')) {
-                    updateChart();
-                }
-            });
+        document.addEventListener('htmx:afterRequest', function(event) {
+            // You can add other dynamic behaviors here if needed in the future
         });
     </script>
 </body>

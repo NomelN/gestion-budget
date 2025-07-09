@@ -1,18 +1,9 @@
-import sqlite3
+from app import app, db
 
 def init_db():
-    conn = sqlite3.connect('database.db')
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            label TEXT NOT NULL,
-            amount REAL NOT NULL,
-            type TEXT NOT NULL
-        )
-    ''')
-    conn.commit()
-    conn.close()
+    with app.app_context():
+        db.create_all()
 
 if __name__ == '__main__':
     init_db()
+    print("Database initialized with SQLAlchemy models.")

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, Response
 from .models import db, Transaction
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -98,7 +98,11 @@ def add_transaction():
     </div>
     '''
     transaction_html = render_template('transaction_item.html', transaction=new_transaction)
-    return transaction_html + balance_html + totals_html
+    
+    response_html = transaction_html + balance_html + totals_html
+    response = Response(response_html)
+    response.headers['HX-Trigger'] = 'show-toast'
+    return response
 
 @main_routes.route('/delete-transaction/<int:transaction_id>', methods=['DELETE'])
 def delete_transaction(transaction_id):

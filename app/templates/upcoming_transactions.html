@@ -50,7 +50,6 @@
                             <th scope="col" class="px-6 py-3">Libellé</th>
                             <th scope="col" class="px-6 py-3 text-center">Montant</th>
                             <th scope="col" class="px-6 py-3 text-center">Type</th>
-                            <th scope="col" class="px-6 py-3 text-center">Restant</th>
                             <th scope="col" class="px-6 py-3 text-center">Action</th>
                         </tr>
                     </thead>
@@ -71,13 +70,6 @@
                                 <span class="px-2 py-1 font-semibold text-xs rounded-full {% if transaction.type == 'income' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
                                     {{ transaction.type|capitalize }}
                                 </span>
-                            </td>
-                            <td class="px-6 py-4 text-center text-gray-600">
-                                {% if transaction.remaining_installments is not none %}
-                                    <span class="font-mono bg-gray-200 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">{{ transaction.remaining_installments }}</span>
-                                {% else %}
-                                    <span class="text-gray-400">&mdash;</span>
-                                {% endif %}
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <button hx-post="/pay-in-advance/{{ transaction.id }}" 

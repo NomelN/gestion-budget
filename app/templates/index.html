@@ -108,7 +108,24 @@
             </div>
         </div>
     </div>
+    <div id="toast" class="fixed top-5 right-5 bg-green-500 text-white py-2 px-4 rounded-xl shadow-lg transition-transform transform translate-x-full" style="display: none;">
+        Transaction validée
+    </div>
     <script>
+        document.body.addEventListener('show-toast', function() {
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 500);
+            }, 3000);
+        });
+
         document.addEventListener('htmx:afterRequest', function(event) {
             // You can add other dynamic behaviors here if needed in the future
         });

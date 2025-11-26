@@ -1,0 +1,354 @@
+/* ============================================
+   MODERN DESIGN SYSTEM - BUDGET APP
+   ============================================ */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ============================================
+   CSS VARIABLES - DESIGN TOKENS
+   ============================================ */
+:root {
+  /* Primary Colors - Modern Purple/Indigo */
+  --color-primary-50: hsl(250, 100%, 97%);
+  --color-primary-100: hsl(251, 91%, 95%);
+  --color-primary-200: hsl(251, 95%, 92%);
+  --color-primary-300: hsl(252, 95%, 85%);
+  --color-primary-400: hsl(255, 92%, 76%);
+  --color-primary-500: hsl(258, 90%, 66%);
+  --color-primary-600: hsl(262, 83%, 58%);
+  --color-primary-700: hsl(263, 70%, 50%);
+  --color-primary-800: hsl(263, 69%, 42%);
+  --color-primary-900: hsl(264, 67%, 35%);
+
+  /* Accent Colors */
+  --color-accent-cyan: hsl(189, 94%, 43%);
+  --color-accent-pink: hsl(330, 85%, 60%);
+  --color-accent-orange: hsl(25, 95%, 53%);
+
+  /* Success & Error */
+  --color-success: hsl(142, 76%, 36%);
+  --color-success-light: hsl(142, 71%, 45%);
+  --color-error: hsl(0, 84%, 60%);
+  --color-error-light: hsl(0, 72%, 51%);
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.3);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 600ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ============================================
+   GLOBAL STYLES
+   ============================================ */
+* {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* ============================================
+   GLASSMORPHISM EFFECTS
+   ============================================ */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-card-strong {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+/* Slide In Up */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.6s var(--transition-base) forwards;
+}
+
+/* Fade In Scale */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.5s var(--transition-base) forwards;
+}
+
+/* Shimmer Effect */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 3s infinite;
+}
+
+/* Pulse Glow */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4),
+                0 0 40px rgba(139, 92, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.6),
+                0 0 60px rgba(139, 92, 246, 0.3);
+  }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Float Animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Fade In (Legacy) */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.new-item-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Flash Update */
+@keyframes flash {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.flash-update {
+  animation: flash 0.7s ease-out;
+}
+
+/* Stagger Animation Delays */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+
+/* ============================================
+   HTMX ANIMATIONS
+   ============================================ */
+.transaction-item.htmx-swapping {
+  opacity: 0;
+  transform: scale(0.9) translateX(-20px);
+  transition: all 0.4s var(--transition-base);
+}
+
+.htmx-added {
+  animation: fadeInScale 0.5s var(--transition-base);
+}
+
+/* ============================================
+   HOVER EFFECTS & MICRO-INTERACTIONS
+   ============================================ */
+
+/* 3D Hover Effect */
+.hover-lift {
+  transition: all var(--transition-base);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Glow on Hover */
+.hover-glow:hover {
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.5),
+              0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Button Ripple Effect */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-ripple:active::after {
+  width: 300px;
+  height: 300px;
+}
+
+/* Icon Rotate on Hover */
+.icon-rotate {
+  transition: transform var(--transition-base);
+}
+
+.icon-rotate:hover {
+  transform: rotate(15deg) scale(1.1);
+}
+
+/* ============================================
+   GRADIENT BACKGROUNDS
+   ============================================ */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-700) 100%);
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.gradient-error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.gradient-animated {
+  background: linear-gradient(
+    -45deg,
+    var(--color-primary-600),
+    var(--color-accent-pink),
+    var(--color-accent-cyan),
+    var(--color-primary-500)
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-800));
+}
+
+/* ============================================
+   FORM ENHANCEMENTS
+   ============================================ */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  transition: all var(--transition-base);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.backdrop-blur-lg {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}

@@ -37,7 +37,7 @@ def index():
 
 @main_routes.route('/transactions')
 def load_transactions():
-    offset = int(request.args.get('offset', 0))
+    offset = int(request.args.get('offset') or 0)
     transactions = get_transactions_filtered(limit=TRANSACTIONS_PER_PAGE, offset=offset)
     total_transactions_count = Transaction.query.count()
     next_offset = offset + TRANSACTIONS_PER_PAGE
@@ -80,13 +80,13 @@ def add_transaction():
     balance = total_income - total_expense
 
     balance_html = f'''
-    <div id="balance" hx-swap-oob="true" class="bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
+    <div id="balance" hx-swap-oob="true" class="flash-update bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
         <h2 class="text-lg font-medium text-indigo-200">Solde Actuel</h2>
         <p class="text-4xl font-bold tracking-tight">{balance:.2f} €</p>
     </div>
     '''
     totals_html = f'''
-    <div id="totals-by-type" hx-swap-oob="true" class="grid grid-cols-2 gap-4 text-center">
+    <div id="totals-by-type" hx-swap-oob="true" class="flash-update grid grid-cols-2 gap-4 text-center">
         <div class="bg-green-500 text-white p-4 rounded-lg shadow-md">
             <h3 class="text-lg font-medium">Revenus</h3>
             <p class="text-2xl font-bold">{total_income:.2f} €</p>
@@ -98,7 +98,9 @@ def add_transaction():
     </div>
     '''
     transaction_html = render_template('transaction_item.html', transaction=new_transaction)
-    
+    # Add a class to the new transaction for the fade-in animation
+    transaction_html = transaction_html.replace('class="transaction-item', 'class="transaction-item new-item-fade-in', 1)
+
     response_html = transaction_html + balance_html + totals_html
     response = Response(response_html)
     response.headers['HX-Trigger'] = 'show-toast'
@@ -114,13 +116,13 @@ def delete_transaction(transaction_id):
     balance = total_income - total_expense
 
     balance_html = f'''
-    <div id="balance" hx-swap-oob="true" class="bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
+    <div id="balance" hx-swap-oob="true" class="flash-update bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
         <h2 class="text-lg font-medium text-indigo-200">Solde Actuel</h2>
         <p class="text-4xl font-bold tracking-tight">{balance:.2f} €</p>
     </div>
     '''
     totals_html = f'''
-    <div id="totals-by-type" hx-swap-oob="true" class="grid grid-cols-2 gap-4 text-center">
+    <div id="totals-by-type" hx-swap-oob="true" class="flash-update grid grid-cols-2 gap-4 text-center">
         <div class="bg-green-500 text-white p-4 rounded-lg shadow-md">
             <h3 class="text-lg font-medium">Revenus</h3>
             <p class="text-2xl font-bold">{total_income:.2f} €</p>
@@ -150,13 +152,13 @@ def update_transaction(transaction_id):
     balance = total_income - total_expense
 
     balance_html = f'''
-    <div id="balance" hx-swap-oob="true" class="bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
+    <div id="balance" hx-swap-oob="true" class="flash-update bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
         <h2 class="text-lg font-medium text-indigo-200">Solde Actuel</h2>
         <p class="text-4xl font-bold tracking-tight">{balance:.2f} €</p>
     </div>
     '''
     totals_html = f'''
-    <div id="totals-by-type" hx-swap-oob="true" class="grid grid-cols-2 gap-4 text-center">
+    <div id="totals-by-type" hx-swap-oob="true" class="flash-update grid grid-cols-2 gap-4 text-center">
         <div class="bg-green-500 text-white p-4 rounded-lg shadow-md">
             <h3 class="text-lg font-medium">Revenus</h3>
             <p class="text-2xl font-bold">{total_income:.2f} €</p>
@@ -341,13 +343,13 @@ def pay_in_advance(transaction_id):
     balance = total_income - total_expense
 
     balance_html = f'''
-    <div id="balance" hx-swap-oob="true" class="bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
+    <div id="balance" hx-swap-oob="true" class="flash-update bg-indigo-600 text-white p-6 rounded-2xl shadow-lg mb-10 text-center">
         <h2 class="text-lg font-medium text-indigo-200">Solde Actuel</h2>
         <p class="text-4xl font-bold tracking-tight">{balance:.2f} €</p>
     </div>
     '''
     totals_html = f'''
-    <div id="totals-by-type" hx-swap-oob="true" class="grid grid-cols-2 gap-4 text-center">
+    <div id="totals-by-type" hx-swap-oob="true" class="flash-update grid grid-cols-2 gap-4 text-center">
         <div class="bg-green-500 text-white p-4 rounded-lg shadow-md">
             <h3 class="text-lg font-medium">Revenus</h3>
             <p class="text-2xl font-bold">{total_income:.2f} €</p>

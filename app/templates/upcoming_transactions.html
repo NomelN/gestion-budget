@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,44 +8,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-out { animation: fadeOut 0.5s ease-in-out forwards; }
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; height: 0; padding: 0; border: 0; }
-        }
-        tr.htmx-swapping {
-            opacity: 0;
-            transition: opacity 0.5s ease-out;
+        body {
+            font-family: 'Inter', sans-serif;
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+
+<body style="margin: 0;">
 
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-        <nav class="mb-8">
-            <a href="/" class="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center transition-colors">
+        <nav class="mb-8 animate-fade-in-scale">
+            <a href="/"
+                class="glass-card inline-flex items-center px-4 py-2 rounded-xl text-gray-800 hover-lift font-semibold transition-all">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Retour à l'accueil
             </a>
         </nav>
 
-        <header class="mb-10 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Prélèvements à Venir</h1>
-            <p class="text-lg text-gray-600 mt-2">Anticipez vos dépenses et revenus futurs avec clarté.</p>
+        <header class="mb-10 text-center animate-slide-in-up">
+            <h1 class="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">Prélèvements à Venir</h1>
+            <p class="text-lg text-white/90 mt-2">Anticipez vos dépenses et revenus futurs avec clarté.</p>
         </header>
 
-        <div class="bg-white p-6 rounded-2xl shadow-lg fade-in">
+        <div class="glass-card-strong p-8 rounded-3xl animate-slide-in-up stagger-1">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left text-gray-500">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50/50 backdrop-blur-sm">
                         <tr>
                             <th scope="col" class="px-6 py-3">Date</th>
                             <th scope="col" class="px-6 py-3">Libellé</th>
@@ -55,7 +46,8 @@
                     </thead>
                     <tbody id="upcoming-transactions-list">
                         {% for transaction in upcoming_transactions %}
-                        <tr id="upcoming-transaction-{{ transaction.id }}" class="bg-white border-b hover:bg-gray-50 transition-colors">
+                        <tr id="upcoming-transaction-{{ transaction.id }}"
+                            class="border-b border-gray-100 hover:bg-white/50 transition-all">
                             <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                 <i class="far fa-calendar-alt mr-2 text-indigo-500"></i>
                                 {{ transaction.timestamp.strftime('%d/%m/%Y') }}
@@ -63,19 +55,20 @@
                             <td class="px-6 py-4 font-medium text-gray-900">
                                 {{ transaction.label }}
                             </td>
-                            <td class="px-6 py-4 text-center font-semibold {% if transaction.type == 'income' %}text-green-600{% else %}text-red-600{% endif %}">
+                            <td
+                                class="px-6 py-4 text-center font-semibold {% if transaction.type == 'income' %}text-green-600{% else %}text-red-600{% endif %}">
                                 {{ '%.2f'|format(transaction.amount) }} €
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="px-2 py-1 font-semibold text-xs rounded-full {% if transaction.type == 'income' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                <span
+                                    class="px-2 py-1 font-semibold text-xs rounded-full {% if transaction.type == 'income' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
                                     {{ transaction.type|capitalize }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <button hx-post="/pay-in-advance/{{ transaction.id }}" 
-                                        hx-target="#upcoming-transaction-{{ transaction.id }}" 
-                                        hx-swap="outerHTML"
-                                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out transform hover:-translate-y-0.5">
+                                <button hx-post="/pay-in-advance/{{ transaction.id }}"
+                                    hx-target="#upcoming-transaction-{{ transaction.id }}" hx-swap="outerHTML"
+                                    class="gradient-success hover-glow btn-ripple text-white font-bold py-2 px-5 rounded-xl shadow-md transition-all">
                                     <i class="fas fa-check-circle mr-1"></i> Payer
                                 </button>
                             </td>
@@ -96,10 +89,11 @@
             </div>
         </div>
 
-        <footer class="text-center mt-12 text-sm text-gray-500">
+        <footer class="text-center mt-12 text-sm text-white/70">
             <p>Gérez votre budget avec sérénité.</p>
         </footer>
     </div>
 
 </body>
+
 </html>

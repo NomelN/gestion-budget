@@ -56,7 +56,7 @@ alembic upgrade head
 **6. Lancer l'application**
 
 ```bash
-uv python run.py
+uv run python run.py
 ```
 
 L'application sera accessible à l'adresse `http://127.0.0.1:5000`.

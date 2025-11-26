@@ -36,7 +36,7 @@
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(255, 255, 255, 0.18);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -85,15 +85,27 @@ body {
 }
 
 /* ============================================
-   ANIMATIONS
+   ANIMATIONS - SIMPLIFIED
    ============================================ */
 
-/* Slide In Up */
+/* Fade In - Subtle entrance animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slide In Up - Reduced movement */
 @keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -101,15 +113,16 @@ body {
 }
 
 .animate-slide-in-up {
-  animation: slideInUp 0.6s var(--transition-base) forwards;
+  animation: slideInUp 0.3s ease-out forwards;
 }
 
-/* Fade In Scale */
+/* Fade In Scale - Minimal scaling */
 @keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -117,157 +130,114 @@ body {
 }
 
 .animate-fade-in-scale {
-  animation: fadeInScale 0.5s var(--transition-base) forwards;
+  animation: fadeInScale 0.25s ease-out forwards;
 }
 
-/* Shimmer Effect */
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.3) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 1000px 100%;
-  animation: shimmer 3s infinite;
-}
-
-/* Pulse Glow */
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4),
-                0 0 40px rgba(139, 92, 246, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.6),
-                0 0 60px rgba(139, 92, 246, 0.3);
-  }
-}
-
-.pulse-glow {
-  animation: pulseGlow 2s ease-in-out infinite;
-}
-
-/* Float Animation */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Fade In (Legacy) */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* New item fade in */
 .new-item-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
-/* Flash Update */
+/* Flash Update - Simplified */
 @keyframes flash {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-  100% { transform: scale(1); }
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.95;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .flash-update {
-  animation: flash 0.7s ease-out;
+  animation: flash 0.4s ease-out;
 }
 
-/* Stagger Animation Delays */
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
+/* Simplified stagger delays - shorter delays */
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+
+.stagger-2 {
+  animation-delay: 0.1s;
+}
+
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+
+.stagger-4 {
+  animation-delay: 0.2s;
+}
+
+/* Removed animations: shimmer, pulse-glow, float */
+/* These classes now do nothing but won't break existing HTML */
+.shimmer {
+  opacity: 1;
+}
+
+.pulse-glow {
+  opacity: 1;
+}
+
+.float {
+  opacity: 1;
+}
 
 /* ============================================
-   HTMX ANIMATIONS
+   HTMX ANIMATIONS - SIMPLIFIED
    ============================================ */
 .transaction-item.htmx-swapping {
   opacity: 0;
-  transform: scale(0.9) translateX(-20px);
-  transition: all 0.4s var(--transition-base);
+  transition: opacity 0.2s ease;
 }
 
 .htmx-added {
-  animation: fadeInScale 0.5s var(--transition-base);
+  animation: fadeIn 0.25s ease-out;
 }
 
 /* ============================================
-   HOVER EFFECTS & MICRO-INTERACTIONS
+   HOVER EFFECTS & MICRO-INTERACTIONS - SIMPLIFIED
    ============================================ */
 
-/* 3D Hover Effect */
+/* Subtle Hover Lift */
 .hover-lift {
-  transition: all var(--transition-base);
+  transition: all 0.2s ease;
 }
 
 .hover-lift:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: var(--shadow-xl);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Glow on Hover */
+/* Subtle Glow on Hover */
 .hover-glow:hover {
-  box-shadow: 0 0 25px rgba(139, 92, 246, 0.5),
-              0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.3),
+    0 4px 15px -3px rgba(0, 0, 0, 0.15);
 }
 
-/* Button Ripple Effect */
+/* Simplified Button Ripple */
 .btn-ripple {
   position: relative;
   overflow: hidden;
+  transition: all 0.2s ease;
 }
 
-.btn-ripple::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+.btn-ripple:active {
+  transform: scale(0.98);
 }
 
-.btn-ripple:active::after {
-  width: 300px;
-  height: 300px;
-}
-
-/* Icon Rotate on Hover */
+/* Minimal Icon Effect */
 .icon-rotate {
-  transition: transform var(--transition-base);
+  transition: transform 0.2s ease;
 }
 
 .icon-rotate:hover {
-  transform: rotate(15deg) scale(1.1);
+  transform: scale(1.05);
 }
 
 /* ============================================
@@ -286,21 +256,27 @@ body {
 }
 
 .gradient-animated {
-  background: linear-gradient(
-    -45deg,
-    var(--color-primary-600),
-    var(--color-accent-pink),
-    var(--color-accent-cyan),
-    var(--color-primary-500)
-  );
+  background: linear-gradient(-45deg,
+      var(--color-primary-600),
+      var(--color-accent-pink),
+      var(--color-accent-cyan),
+      var(--color-primary-500));
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* ============================================
@@ -328,7 +304,9 @@ body {
 /* ============================================
    FORM ENHANCEMENTS
    ============================================ */
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--color-primary-500);
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);

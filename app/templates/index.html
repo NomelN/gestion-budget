@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr-FR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,41 +12,48 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
+
 <body class="font-sans" style="margin: 0;">
     <div class="container mx-auto max-w-4xl mt-8 p-4 md:p-8">
-        <header class="text-center mb-12 animate-fade-in-scale">
+        <header class="text-center mb-12">
             <h1 class="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg mb-3">Suivi de Budget</h1>
             <p class="text-white/90 text-lg mt-2">Une vue claire et concise de vos finances</p>
         </header>
 
         <!-- Navigation to Reports -->
-        <div class="flex flex-wrap justify-center gap-4 mb-10 animate-slide-in-up stagger-1">
-            <a href="/reports" class="flex items-center glass-card hover-lift text-gray-800 font-semibold py-3 px-6 rounded-xl transition-all">
+        <div class="flex flex-wrap justify-center gap-4 mb-10">
+            <a href="/reports"
+                class="flex items-center glass-card hover-lift text-gray-800 font-semibold py-3 px-6 rounded-xl transition-all">
                 <i class="fas fa-chart-line mr-2 icon-rotate"></i> Rapports et Analyses
             </a>
-            <a href="/recurring-transactions" class="flex items-center glass-card hover-lift text-gray-800 font-semibold py-3 px-6 rounded-xl transition-all">
-                <i class="fas fa-sync-alt mr-2 icon-rotate"></i> Gérer les Récurrentes
+            <a href="/recurring-transactions"
+                class="flex items-center glass-card hover-lift text-gray-800 font-semibold py-3 px-6 rounded-xl transition-all">
+                <i class="fas fa-sync-alt mr-2 icon-rotate"></i> Abonnements & Récurrences
             </a>
-            <a href="/upcoming-transactions" class="flex items-center glass-card hover-lift text-gray-800 font-semibold py-3 px-6 rounded-xl transition-all">
-                <i class="fas fa-calendar-alt mr-2 icon-rotate"></i> Prélèvements à Venir
+            <a href="/upcoming-transactions"
+                class="flex items-center glass-card hover-lift text-gray-800 font-semibold py-3 px-6 rounded-xl transition-all">
+                <i class="fas fa-calendar-alt mr-2 icon-rotate"></i> Calendrier des Prélèvements
             </a>
         </div>
 
         <!-- Balance Card -->
-        <div id="balance" hx-swap-oob="true" class="glass-card-strong pulse-glow p-10 rounded-3xl mb-10 text-center animate-slide-in-up stagger-2 relative overflow-hidden">
+        <div id="balance" hx-swap-oob="true"
+            class="glass-card-strong p-10 rounded-3xl mb-10 text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-full shimmer opacity-30 pointer-events-none"></div>
             <div class="relative z-10">
                 <div class="inline-block mb-3">
                     <i class="fas fa-wallet text-5xl text-purple-600 float"></i>
                 </div>
                 <h2 class="text-xl font-semibold text-gray-700 mb-2">Solde Actuel</h2>
-                <p class="text-6xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight">{{ "%.2f"|format(balance) }} €</p>
+                <p
+                    class="text-6xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight">
+                    {{ "%.2f"|format(balance) }} €</p>
             </div>
         </div>
 
         <!-- Totals by Type -->
         <div id="totals-by-type" class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center mb-10">
-            <div class="glass-card hover-lift p-8 rounded-2xl animate-slide-in-up stagger-3 relative overflow-hidden">
+            <div class="glass-card hover-lift p-8 rounded-2xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-green-400/20 rounded-full -mr-16 -mt-16"></div>
                 <div class="relative z-10">
                     <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
@@ -55,7 +63,7 @@
                     <p class="text-4xl font-bold text-green-600">+{{ "%.2f"|format(total_income) }} €</p>
                 </div>
             </div>
-            <div class="glass-card hover-lift p-8 rounded-2xl animate-slide-in-up stagger-4 relative overflow-hidden">
+            <div class="glass-card hover-lift p-8 rounded-2xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-red-400/20 rounded-full -mr-16 -mt-16"></div>
                 <div class="relative z-10">
                     <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
@@ -69,56 +77,68 @@
 
         <!-- Add Transaction Form -->
         <div x-data="{ open: false }" class="mb-10 text-center">
-            <button @click="open = !open" class="glass-card-strong hover-glow btn-ripple text-gray-800 font-bold py-4 px-10 rounded-xl transition-all shadow-lg">
+            <button @click="open = !open"
+                class="glass-card-strong hover-glow btn-ripple text-gray-800 font-bold py-4 px-10 rounded-xl transition-all shadow-lg">
                 <span x-show="!open"><i class="fas fa-plus-circle mr-2"></i> Ajouter une transaction</span>
                 <span x-show="open"><i class="fas fa-times-circle mr-2"></i> Fermer</span>
             </button>
 
-            <div x-show="open" 
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 transform -translate-y-4"
-                 x-transition:enter-end="opacity-100 transform translate-y-0"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100 transform translate-y-0"
-                 x-transition:leave-end="opacity-0 transform -translate-y-4"
-                 class="mt-6 glass-card-strong p-8 rounded-3xl text-left">
-                <form hx-post="/add-transaction" hx-target="#transactions-container" hx-swap="afterbegin" @submit="setTimeout(() => open = false, 500)">
+            <div x-show="open" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform -translate-y-4"
+                x-transition:enter-end="opacity-100 transform translate-y-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 transform translate-y-0"
+                x-transition:leave-end="opacity-0 transform -translate-y-4"
+                class="mt-6 glass-card-strong p-8 rounded-3xl text-left">
+                <form hx-post="/add-transaction" hx-target="#transactions-container" hx-swap="afterbegin"
+                    @submit="setTimeout(() => open = false, 500)">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                         <div>
                             <label for="label" class="block text-sm font-medium text-gray-700 mb-1">Libellé</label>
-                            <input type="text" id="label" name="label" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Ex: Salaire, Courses" required>
+                            <input type="text" id="label" name="label"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                placeholder="Ex: Salaire, Courses" required>
                         </div>
                         <div>
                             <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Montant (€)</label>
-                            <input type="number" step="0.01" id="amount" name="amount" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Ex: 150.50" required>
+                            <input type="number" step="0.01" id="amount" name="amount"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                placeholder="Ex: 150.50" required>
                         </div>
                     </div>
                     <div class="mb-6">
                         <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                        <select id="type" name="type" class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        <select id="type" name="type"
+                            class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
                             <option value="income">Revenu</option>
                             <option value="expense">Dépense</option>
                         </select>
                     </div>
                     <div x-data="{ isRecurring: false }" class="mb-6">
                         <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" x-model="isRecurring" name="is_recurring" value="1" class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                            <input type="checkbox" x-model="isRecurring" name="is_recurring" value="1"
+                                class="form-checkbox h-5 w-5 text-blue-600 rounded">
                             <span class="ml-3 text-gray-700">Transaction récurrente ?</span>
                         </label>
                         <div x-show="isRecurring" x-transition class="mt-4 p-4 bg-gray-50 rounded-lg border">
-                            <label for="recurrence_frequency" class="block text-sm font-medium text-gray-700 mb-1">Fréquence</label>
-                            <select id="recurrence_frequency" name="recurrence_frequency" class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition">
+                            <label for="recurrence_frequency"
+                                class="block text-sm font-medium text-gray-700 mb-1">Fréquence</label>
+                            <select id="recurrence_frequency" name="recurrence_frequency"
+                                class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition">
                                 <option value="monthly">Mensuel</option>
                                 <option value="weekly">Hebdomadaire</option>
                                 <option value="yearly">Annuel</option>
                             </select>
                             <div class="mt-4">
-                                <label for="num_installments" class="block text-sm font-medium text-gray-700 mb-1">Nombre de paiements</label>
-                                <input type="number" id="num_installments" name="num_installments" min="2" value="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition">
+                                <label for="num_installments"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Nombre de paiements</label>
+                                <input type="number" id="num_installments" name="num_installments" min="2" value="2"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition">
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="w-full gradient-success hover-glow btn-ripple text-white font-bold py-4 px-4 rounded-xl shadow-lg transition-all">
+                    <button type="submit"
+                        class="w-full gradient-success hover-glow btn-ripple text-white font-bold py-4 px-4 rounded-xl shadow-lg transition-all">
                         <i class="fas fa-check-circle mr-2"></i> Enregistrer la transaction
                     </button>
                 </form>
@@ -136,12 +156,14 @@
             </div>
         </div>
     </div>
-    <div id="toast" class="fixed top-5 right-5 glass-card-strong text-gray-800 py-3 px-6 rounded-2xl shadow-2xl transition-transform transform translate-x-full border-l-4 border-green-500" style="display: none;">
+    <div id="toast"
+        class="fixed top-5 right-5 glass-card-strong text-gray-800 py-3 px-6 rounded-2xl shadow-2xl transition-transform transform translate-x-full border-l-4 border-green-500"
+        style="display: none;">
         <i class="fas fa-check-circle text-green-600 mr-2"></i>
         <span class="font-semibold">Transaction validée</span>
     </div>
     <script>
-        document.body.addEventListener('show-toast', function() {
+        document.body.addEventListener('show-toast', function () {
             const toast = document.getElementById('toast');
             toast.style.display = 'block';
             setTimeout(() => {
@@ -155,9 +177,10 @@
             }, 3000);
         });
 
-        document.addEventListener('htmx:afterRequest', function(event) {
+        document.addEventListener('htmx:afterRequest', function (event) {
             // You can add other dynamic behaviors here if needed in the future
         });
     </script>
 </body>
+
 </html>

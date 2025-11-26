@@ -255,6 +255,12 @@ def recurring_transactions():
             model.remaining_installments = model.total_installments - model.paid_installments
             if model.remaining_installments <= 0:
                 completed_recurring_models.append(model)
+    
+    # Sort completed models by completion_date (most recent first)
+    completed_recurring_models.sort(
+        key=lambda x: x.completion_date if x.completion_date else datetime.min,
+        reverse=True
+    )
 
     return render_template('recurring_transactions.html', active_recurring_models=active_recurring_models, completed_recurring_models=completed_recurring_models)
 
@@ -360,5 +366,7 @@ def pay_in_advance(transaction_id):
         </div>
     </div>
     '''
-    # Return empty response for HTMX to remove the row, plus OOB swaps for balance/totals
-    return balance_html + totals_html, 200
+    # Redirect to home page to show the transaction in history
+    response = Response('')
+    response.headers['HX-Redirect'] = '/'
+    return response
